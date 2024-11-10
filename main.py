@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import os
+from random import randint
 frame = np.zeros(shape=(1000,1000,3))
 outPath="output"
 #chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
@@ -14,24 +15,6 @@ def openTrack(path):
     return data, frequency
 
 
-def processData(data):
-    dSum = int(np.absolute(sum(data)*10000000000000000))
-   
-
-    data.dtype=np.uint8
-    map =data
-
-    s=int((len(map)//3)**(1/2))
-
-    im = np.resize(map,new_shape=(s,s,3))
-    im = np.sort(im,axis=0)
-    im = np.sort(im,axis=1)
-    clMap = dSum % 22
-    #print(clMap)
-    im = cv2.applyColorMap(im, clMap)
-    
-
-    return im
 
 def pixelTochar(l):
     charL=[]
@@ -80,37 +63,94 @@ def save(name, file):
 
 
 
-def extrude(im, xStart, yStart, size, layers):
+def extrude(im, xStart, yStart, size, layers, dist = 10):
     workingRegion = im[yStart:yStart + size, xStart:xStart + size].copy()
 
     for i in range(layers):
-        posX=0
-        posY=0
+        r1 = randint(0,2)
+        
+        if(r1 == 0):
+            posX= xStart + i * dist//2
+        else:
+            posX= xStart - i * dist//2
+        posY= yStart - i * dist 
 
         if posX < 0:
             break
         if posY  <0:
             break
+        currentLayer = workingRegion
+        layerHeight, layerWidth = currentLayer.shape[:2]
+        
+       
+        maxHeight = min(layerHeight, im.shape[0] - posY)
+        maxWidth = min(layerWidth, im.shape[1] - posX)
+        
+        if maxHeight <= 0 or maxWidth <= 0:
+            continue 
+        currentLayer = currentLayer[:maxHeight, :maxWidth]
+
+        
+        im[posY:posY + maxHeight, posX:posX + maxWidth] = currentLayer
+
+        edgeWidth = 1  
+        im[posY:posY + edgeWidth, posX:posX + maxWidth] = (0,0,0)
+
+    return im
 
 
 
-    return
+
+
+def processDataPipeline(data,fr):
+
+    bpm, beats = lb.beat.beat_track(y=data, sr=fr)
+
+    dSum = int(np.absolute(sum(data)*10000000000000000))
+   
+    data.dtype=np.uint8
+    map =data
+
+    s=int((len(map)//3)**(1/2))
+
+    im = np.resize(map,new_shape=(s,s,3))
+    im = np.sort(im,axis=0)
+    im = np.sort(im,axis=1)
+    clMap = dSum % 22
+    #print(clMap)
+    im = cv2.applyColorMap(im, clMap)
+
+    
+    stx =0 
+    sty = 0
+    for elem in beats:
+        extrude(im, stx, sty, size=int(bpm), layers= int(elem//100))
+        if (stx<im.shape[1]):
+            stx +=int(bpm) + 100
+        else:
+            stx = 0
+            sty +=int(bpm ) + 100
+
+
+
+    
+
+    return im
 
 
 def main():
     
-    
+    track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
     #save("try.png",frame)
-    d,f=openTrack("D:\dionigi\Music\Synth\Dune3.mp3")
-    onset_env = lb.onset.onset_strength(y=d, sr=f)
+    d,f=openTrack(track)
     #tempo, beat_frames = lb.beat.beat_track(y=d, sr=f, onset_envelope=onset_env)
     #beat_times = lb.frames_to_time(beat_frames, sr=f)
-    m = processData(d)
+    i = processDataPipeline(d,f)
     #c=pixelTochar(m)
     #b=drawChars(np.zeros(shape=m.shape),c)
     #
     # b=np.resize(b,(800,800,3))
-    save("bw.png",m)
+    save("bw.png",i)
     #fft_out = lb.stft(d)
     #freq =  lb.fft_frequencies(sr=f)
     #colors = np.abs(fft_out)
