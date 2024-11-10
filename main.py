@@ -7,49 +7,31 @@ import os
 frame = np.zeros(shape=(1000,1000,3))
 outPath="output"
 #chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
-chars='0123456789'
+#chars='0123456789'
 
 def openTrack(path):
     data, frequency =lb.load(path)
     return data, frequency
 
 
-def processData(data,f):
-
-    #data = lb.power_to_db(data,ref=np.max)
-    #data = np.absolute(data)
-    
-    #data = data*1000000000000000
-    data.dtype=np.uint8
-    
-
-    minV = data.min()   
-    maxV = data.max()
-    print((minV,maxV))
-
-    #normData = (data - min) / (max - min)
+def processData(data):
+    dSum = int(np.absolute(sum(data)*10000000000000000))
    
-    #data = sorted(data)
-    #map = (((data - minV))/(maxV-minV)) * 255
+
+    data.dtype=np.uint8
     map =data
-   #map = sorted(map)
+
     s=int((len(map)//3)**(1/2))
-    im=np.resize(map,new_shape=(s,s,3))
+
+    im = np.resize(map,new_shape=(s,s,3))
     im = np.sort(im,axis=0)
     im = np.sort(im,axis=1)
-    #im = cv2.applyColorMap(im, cv2.COLORMAP_TURBO)
-    im=  cv2.GaussianBlur(im, (15, 15), 0)
+    clMap = dSum % 22
+    #print(clMap)
+    im = cv2.applyColorMap(im, clMap)
+    
 
     return im
-
-def normalDrawing():
-    distrib=np.random.normal(loc=0,scale=1,size=1000*1000)
-
-
-
-
-    return
-
 
 def pixelTochar(l):
     charL=[]
@@ -78,14 +60,6 @@ def melSpectrogram(data,freq):
    # plt.show()
     return mlsp
 
-
-def drawFrame(data,dims=(1000,1000,3)):
-    font = None
-    for elem in data:
-        
-        return
-    return
-
 def drawChars(blankframe,charList):
     font = cv2.FONT_HERSHEY_SIMPLEX
     fontSize = 0.5 # Adjust font scale for readability
@@ -105,6 +79,24 @@ def save(name, file):
     return
 
 
+
+def extrude(im, xStart, yStart, size, layers):
+    workingRegion = im[yStart:yStart + size, xStart:xStart + size].copy()
+
+    for i in range(layers):
+        posX=0
+        posY=0
+
+        if posX < 0:
+            break
+        if posY  <0:
+            break
+
+
+
+    return
+
+
 def main():
     
     
@@ -113,7 +105,7 @@ def main():
     onset_env = lb.onset.onset_strength(y=d, sr=f)
     #tempo, beat_frames = lb.beat.beat_track(y=d, sr=f, onset_envelope=onset_env)
     #beat_times = lb.frames_to_time(beat_frames, sr=f)
-    m = processData(d,f)
+    m = processData(d)
     #c=pixelTochar(m)
     #b=drawChars(np.zeros(shape=m.shape),c)
     #
