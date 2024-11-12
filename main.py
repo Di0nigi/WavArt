@@ -112,6 +112,21 @@ def waveDistort(image, waveform, amplitude=200):
     distortedImage = cv2.remap(image, mapX, mapY, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
     return distortedImage
 
+def addNoise(image, m , std):
+
+    noise = np.random.normal(m, std, image.shape[:2]).astype(np.float32)
+    
+    
+    noise = np.repeat(noise[:, :, np.newaxis], 3, axis=2)
+    
+   
+    noisyImage = cv2.add(image.astype(np.float32), noise)
+    
+
+    noisyImage = np.clip(noisyImage, 0, 255).astype(np.uint8)
+    
+    return noisyImage
+
 
 
 
@@ -122,6 +137,7 @@ def processDataPipeline(data,fr):
     bpm, beats = lb.beat.beat_track(y=data, sr=fr)
 
     dSum = int(np.absolute(sum(data)*10000000000000000))
+    nSum = int(np.absolute(sum(data)*10))
 
     wav  = data.copy() #data / np.max(np.abs(data))
    
@@ -158,6 +174,11 @@ def processDataPipeline(data,fr):
     #print(fr)
     im = waveDistort(im, wav,ampl*50)
 
+    print(f"Adding noise...")
+    #print(nSum)
+    #noiseMp = np.resize(wav.copy(),new_shape=(s,s,3))
+    im=addNoise(im,0,nSum)
+
 
 
     
@@ -167,8 +188,8 @@ def processDataPipeline(data,fr):
 
 def main():
     
-    #track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
-    track = "D:\dionigi\Music\Synth\Dune3.mp3"
+    track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
+    #track = "D:\dionigi\Music\Synth\Dune3.mp3"
     #save("try.png",frame)
     d,f=openTrack(track)
     #tempo, beat_frames = lb.beat.beat_track(y=d, sr=f, onset_envelope=onset_env)
@@ -194,7 +215,7 @@ def main():
 
 
 
-    return "done"
+    return "Done"
 
 
 
