@@ -67,12 +67,12 @@ def extrude(im, xStart, yStart, size, layers, dist = 10):
     workingRegion = im[yStart:yStart + size, xStart:xStart + size].copy()
 
     for i in range(layers):
-        r1 = randint(0,2)
+        #r1 = randint(0,2)
         
-        if(r1 == 0):
-            posX= xStart + i * dist//2
-        else:
-            posX= xStart - i * dist//2
+        #if(r1 == 0):
+        posX= xStart + i * dist//8
+        #else:
+         #   posX= xStart - i * dist//2
         posY= yStart - i * dist 
 
         if posX < 0:
@@ -93,8 +93,8 @@ def extrude(im, xStart, yStart, size, layers, dist = 10):
         
         im[posY:posY + maxHeight, posX:posX + maxWidth] = currentLayer
 
-        edgeWidth = 1  
-        im[posY:posY + edgeWidth, posX:posX + maxWidth] = (0,0,0)
+        #edgeWidth = 1  
+        #im[posY:posY + edgeWidth, posX:posX + maxWidth] = (0,0,0)
 
     return im
 
@@ -103,6 +103,7 @@ def extrude(im, xStart, yStart, size, layers, dist = 10):
 
 
 def processDataPipeline(data,fr):
+    print(f"Processing data...")
 
     bpm, beats = lb.beat.beat_track(y=data, sr=fr)
 
@@ -110,6 +111,8 @@ def processDataPipeline(data,fr):
    
     data.dtype=np.uint8
     map =data
+
+    print(f"Aplying color map...")
 
     s=int((len(map)//3)**(1/2))
 
@@ -120,16 +123,19 @@ def processDataPipeline(data,fr):
     #print(clMap)
     im = cv2.applyColorMap(im, clMap)
 
+    print(f"Extruding beatwise...")
     
-    stx =0 
+    stx =50 
     sty = 0
+    div= int(sum(int(digit) for digit in str(abs(int(bpm)))) * 1.5)
+    #print(div)
     for elem in beats:
-        extrude(im, stx, sty, size=int(bpm), layers= int(elem//100))
+        extrude(im, stx, sty, size=int(bpm)*3, layers= int(elem//100))
         if (stx<im.shape[1]):
-            stx +=int(bpm) + 100
+            stx +=im.shape[0]//div
         else:
             stx = 0
-            sty +=int(bpm ) + 100
+            sty +=int(bpm) + 100
 
 
 
@@ -140,7 +146,8 @@ def processDataPipeline(data,fr):
 
 def main():
     
-    track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
+    #track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
+    track = "D:\dionigi\Music\Synth\Dune3.mp3"
     #save("try.png",frame)
     d,f=openTrack(track)
     #tempo, beat_frames = lb.beat.beat_track(y=d, sr=f, onset_envelope=onset_env)
