@@ -98,6 +98,20 @@ def extrude(im, xStart, yStart, size, layers, dist = 10):
 
     return im
 
+def waveDistort(image, waveform, amplitude=200):
+   
+    height, width = image.shape[:2]
+    
+    scaledWaveform = cv2.resize(waveform.reshape(1, -1), (width, 1), interpolation=cv2.INTER_LINEAR).flatten()
+    
+    mapY, mapX = np.indices((height, width), dtype=np.float32)
+    
+    mapY = mapY + amplitude * scaledWaveform
+    mapX = mapX + amplitude * scaledWaveform[:, np.newaxis]
+    
+    distortedImage = cv2.remap(image, mapX, mapY, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return distortedImage
+
 
 
 
@@ -108,6 +122,8 @@ def processDataPipeline(data,fr):
     bpm, beats = lb.beat.beat_track(y=data, sr=fr)
 
     dSum = int(np.absolute(sum(data)*10000000000000000))
+
+    wav  = data.copy() #data / np.max(np.abs(data))
    
     data.dtype=np.uint8
     map =data
@@ -125,7 +141,7 @@ def processDataPipeline(data,fr):
 
     print(f"Extruding beatwise...")
     
-    stx =50 
+    stx =500 
     sty = 0
     div= int(sum(int(digit) for digit in str(abs(int(bpm)))) * 1.5)
     #print(div)
@@ -136,6 +152,11 @@ def processDataPipeline(data,fr):
         else:
             stx = 0
             sty +=int(bpm) + 100
+    
+    print(f"Applying waveform distortion...")
+    ampl = div= int(sum(int(digit) for digit in str(abs(int(fr)))))
+    #print(fr)
+    im = waveDistort(im, wav,ampl*50)
 
 
 

@@ -1,27 +1,41 @@
-import librosa
-import librosa.display
+import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import librosa
 
-# Load the audio file
-filename = 'D:\dionigi\Music\Synth\Dune3.mp3'
-y, sr = librosa.load(filename)
+def loadWaveformFromAudio(audioFilePath):
+    # Load audio file with librosa
+    y, sr = librosa.load(audioFilePath, sr=None)
+    
+    # Normalize the waveform to a range between -1 and 1
+    y = y / np.max(np.abs(y))
+    return y
 
-# Extract tempo and beat frames
-tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+def applyAudioWaveDistortion(image, waveform, amplitude=200):
+    # Get image dimensions
+    height, width = image.shape[:2]
+    
+    # Scale waveform to match the width of the image
+    scaledWaveform = cv2.resize(waveform.reshape(1, -1), (width, 1), interpolation=cv2.INTER_LINEAR).flatten()
+    
+    # Create distortion maps
+    mapY, mapX = np.indices((height, width), dtype=np.float32)
+    
+    # Apply the waveform as a vertical distortion
+    mapY = mapY + amplitude * scaledWaveform
+    
+    # Remap the image using the distortion maps
+    distortedImage = cv2.remap(image, mapX, mapY, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return distortedImage
 
-# Convert the beat frames to time values (in seconds)
-beat_times = librosa.frames_to_time(beat_frames, sr=sr)
+# Load the image and audio
+imagePath = 'D:\dionigi\Documents\Python scripts\WavArt\output\\bw.png'
+audioPath = 'D:\dionigi\Music\Synth\Dune3.mp3'
+image = cv2.imread(imagePath)
 
-print("Estimated Tempo:", tempo)
-print("Beat times (in seconds):", beat_times)
+# Get waveform from audio file
+waveform = loadWaveformFromAudio(audioPath)
 
-# Optionally, plot the waveform with beat markers
-plt.figure(figsize=(10, 4))
-librosa.display.waveshow(y, sr=sr, alpha=0.6)
-plt.vlines(beat_times, -1, 1, color='r', linestyle='--', label='Beats')
-plt.title("Waveform with Beat Times")
-plt.xlabel("Time (s)")
-plt.ylabel("Amplitude")
-plt.legend()
-plt.show()
+# Apply wave distortion to the image based on the audio waveform
+distortedImage = applyAudioWaveDistortion(image, waveform)
+
+cv2.imwrite("warped.png",distortedImage)
