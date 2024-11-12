@@ -5,9 +5,13 @@ import cv2
 import matplotlib.pyplot as plt
 import os
 from random import randint
+from PIL import Image, ImageDraw, ImageFont
+
 frame = np.zeros(shape=(1000,1000,3))
 outPath="output"
-#chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
+fontList=["fonts\\bitwise.ttf","fonts\PlanetN-VXDV.otf"]
+chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
+title=""
 #chars='0123456789'
 
 def openTrack(path):
@@ -60,6 +64,20 @@ def drawChars(blankframe,charList):
 def save(name, file):
     cv2.imwrite(os.path.join(outPath,name), file)
     return
+
+def getFontSize(fontPath, targetHeight, maxSz ,text):
+    
+    fontSize = 1
+    font = ImageFont.truetype(fontPath, fontSize)
+    
+    while font.getbbox(text[0])[3] < targetHeight:
+        if font.getbbox(text)[2] > maxSz:
+            fontSize -=1
+            break
+        fontSize += 1
+        font = ImageFont.truetype(fontPath, fontSize)
+    
+    return fontSize
 
 
 
@@ -127,6 +145,20 @@ def addNoise(image, m , std):
     
     return noisyImage
 
+def addText(image, text, position, font, size, color=(255, 255, 255)):
+    
+    imagePil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    
+    font = ImageFont.truetype(font, size)
+    
+    draw = ImageDraw.Draw(imagePil)
+    
+    draw.text(position, text, font=font, fill=color)
+    
+    image = cv2.cvtColor(np.array(imagePil), cv2.COLOR_RGB2BGR)
+    
+    return image
+
 
 
 
@@ -144,7 +176,7 @@ def processDataPipeline(data,fr):
     data.dtype=np.uint8
     map =data
 
-    print(f"Aplying color map...")
+    print(f"Applying color map...")
 
     s=int((len(map)//3)**(1/2))
 
@@ -154,8 +186,8 @@ def processDataPipeline(data,fr):
     clMap = dSum % 22
     #print(clMap)
     im = cv2.applyColorMap(im, clMap)
-
-    print(f"Extruding beatwise...")
+    
+    print(f"Extruding according to beat...")
     
     stx =500 
     sty = 0
@@ -170,18 +202,26 @@ def processDataPipeline(data,fr):
             sty +=int(bpm) + 100
     
     print(f"Applying waveform distortion...")
-    ampl = div= int(sum(int(digit) for digit in str(abs(int(fr)))))
+
+    ampl = int(sum(int(digit) for digit in str(abs(int(fr)))))
     #print(fr)
     im = waveDistort(im, wav,ampl*50)
+
+    print(f"Adding title...")
+
+    title ="Dune3"
+    txy=(0,im.shape[0]//2)
+    fnt = fontList[1]
+    sz = getFontSize(fnt, im.shape[0]//5, maxSz=im.shape[0]-20, text = title)
+
+    im=addText(im,title,txy,font=fnt,size=sz)
 
     print(f"Adding noise...")
     #print(nSum)
     #noiseMp = np.resize(wav.copy(),new_shape=(s,s,3))
+    nSum = int(sum(int(digit) for digit in str(abs(int(nSum))))*3.4)
+   # print(nSum)
     im=addNoise(im,0,nSum)
-
-
-
-    
 
     return im
 
@@ -189,26 +229,15 @@ def processDataPipeline(data,fr):
 def main():
     
     track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
+    #track = "D:\dionigi\Music\Synth\\RawTracks\ZOOM0002.WAV"
     #track = "D:\dionigi\Music\Synth\Dune3.mp3"
-    #save("try.png",frame)
-    d,f=openTrack(track)
-    #tempo, beat_frames = lb.beat.beat_track(y=d, sr=f, onset_envelope=onset_env)
-    #beat_times = lb.frames_to_time(beat_frames, sr=f)
-    i = processDataPipeline(d,f)
-    #c=pixelTochar(m)
-    #b=drawChars(np.zeros(shape=m.shape),c)
-    #
-    # b=np.resize(b,(800,800,3))
-    save("bw.png",i)
-    #fft_out = lb.stft(d)
-    #freq =  lb.fft_frequencies(sr=f)
-    #colors = np.abs(fft_out)
-    #colors = (colors - colors.min()) / (colors.max() - colors.min())
-    #plt.figure(figsize=(10, 6))
-    #for i in range(colors.shape[1]):  # Iterating over time frames
-    #    plt.scatter(freq, colors[:, i], c=colors[:, i], cmap='hsv', alpha=0.6)
 
-    #plt.show()
+    d,f=openTrack(track)
+   
+    i = processDataPipeline(d,f)
+
+    save("bw.png",i)
+  
 
 
 
