@@ -12,6 +12,7 @@ outPath="output"
 fontList=["fonts\\bitwise.ttf","fonts\PlanetN-VXDV.otf","fonts\CSBishopDrawn-Regular_demo-BF6732d05f69863.otf","fonts\CSAntliaDrawn-Regular_demo-BF6732cebcc8d67.otf","fonts\BechamDisco-Regular_demo-BF6719eb856cdc2.otf"]
 chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
 title="Reptilia"
+asciiPaths=['assets\\patterns1.txt', 'assets\\patterns10.txt', 'assets\\patterns11.txt', 'assets\\patterns12.txt', 'assets\\patterns13.txt', 'assets\\patterns14.txt', 'assets\\patterns15.txt', 'assets\\patterns2.txt', 'assets\\patterns3.txt', 'assets\\patterns4.txt', 'assets\\patterns5.txt', 'assets\\patterns6.txt', 'assets\\patterns7.txt', 'assets\\patterns8.txt', 'assets\\patterns9.txt', 'assets\\shapes1.txt', 'assets\\shapes10.txt', 'assets\\shapes2.txt', 'assets\\shapes3.txt', 'assets\\shapes4.txt', 'assets\\shapes5.txt', 'assets\\shapes6.txt', 'assets\\shapes7.txt', 'assets\\shapes8.txt', 'assets\\shapes9.txt', 'assets\\smile1.txt', 'assets\\smile2.txt', 'assets\\smile3.txt', 'assets\\smile4.txt', 'assets\\smile5.txt', 'assets\\smile6.txt', 'assets\\smile7.txt', 'assets\\smile8.txt']
 #chars='0123456789'
 
 def openTrack(path):
@@ -68,7 +69,7 @@ def getFontSize(fontPath, targetHeight, maxSz ,text):
     fontSize = 1
     font = ImageFont.truetype(fontPath, fontSize)
     
-    while font.getbbox(text[0])[3] < targetHeight:
+    while font.getbbox(text)[3] < targetHeight:
         if font.getbbox(text)[2] > maxSz:
             fontSize -=1
             break
@@ -78,10 +79,10 @@ def getFontSize(fontPath, targetHeight, maxSz ,text):
     return fontSize,font.getbbox(text)
 
 def openFile(path):
-    content=""
+    content=[]
     with open(path,mode="r",encoding="utf-8") as f:
         for line in f:
-            content+=line
+            content.append(line)
             #content+="\n"
     return content
 
@@ -222,8 +223,14 @@ def processDataPipeline(data,fr):
     colors = im.copy()
 
     print(f"Adding Ascii art...")
-    cont=openFile("assets\patterns9.txt")
-    im=addText(image=im,text=cont,position=(0,0),font=fontList[1],size=100)
+
+    ascInd = (nSum*sum([ord(x) for x in title])) % len(asciiPaths)
+    cont=openFile(asciiPaths[ascInd])
+    ascPos = [im.shape[0]//30,im.shape[0]//30]
+    #getFontSize(f5ontList[1],100,maxSz=im.shape[0],text=)
+    for line in cont:
+        im=addText(image=im,text=line,position=tuple(ascPos),font=fontList[1],size=im.shape[0]//45)
+        ascPos[1]+=im.shape[0]//30
 
 
 
@@ -262,9 +269,9 @@ def processDataPipeline(data,fr):
 
 def main(title):
     
-    track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
+    #track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
     #track = "D:\dionigi\Music\Synth\\RawTracks\ZOOM0002.WAV"
-    #track = "D:\dionigi\Music\Synth\Dune3.mp3"
+    track = "D:\dionigi\Music\Synth\Dune3.mp3"
 
     d,f=openTrack(track)
    
