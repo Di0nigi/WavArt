@@ -159,6 +159,13 @@ def addText(image, text, position, font, size, color=(255, 255, 255)):
     
     return image
 
+def sharpen(image, strength=1.5):
+    
+    blurredImage = cv2.GaussianBlur(image, (0, 0), 3)
+    
+    sharpenedImage = cv2.addWeighted(image, 1 + strength, blurredImage, -strength, 0)
+
+    return sharpenedImage
 
 
 
@@ -217,15 +224,10 @@ def processDataPipeline(data,fr):
     
     colors = im
     #colors = np.sort(im,axis=1)
-    #cv2.imwrite("output\colors.png",colors)
+
     highlightColor =tuple(colors[im.shape[0]//3][im.shape[0]//2]+np.array([10,10,10]))#(255,255,255)#
     shadowColor =tuple(colors[0][0]-np.array([10,10,10]))
-    #print(tuple(colors[-1][-1]))
-    #print(tuple(im[-1][-1]))
-    #print(tuple(colors[0][0]))
     
-    
-
     im=addText(im,title,txy,font=fnt,size=sz,color=shadowColor)
     im=addText(im,title,(txy[0]+15,txy[1]),font=fnt,size=sz,color=highlightColor)
 
@@ -236,6 +238,12 @@ def processDataPipeline(data,fr):
    # print(nSum)
     im=addNoise(im,0,nSum)
 
+    print(f"Sharpening...")
+
+    im=sharpen(im,strength=1.5)
+
+
+
     return im
 
 
@@ -243,7 +251,7 @@ def main(title):
     
     track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
     #track = "D:\dionigi\Music\Synth\\RawTracks\ZOOM0002.WAV"
-    track = "D:\dionigi\Music\Synth\Dune3.mp3"
+    #track = "D:\dionigi\Music\Synth\Dune3.mp3"
 
     d,f=openTrack(track)
    
