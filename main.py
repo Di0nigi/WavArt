@@ -18,8 +18,6 @@ def openTrack(path):
     data, frequency =lb.load(path)
     return data, frequency
 
-
-
 def pixelTochar(l):
     charL=[]
     for x,y in enumerate(l):
@@ -79,6 +77,13 @@ def getFontSize(fontPath, targetHeight, maxSz ,text):
     
     return fontSize,font.getbbox(text)
 
+def openFile(path):
+    content=""
+    with open(path,mode="r",encoding="utf-8") as f:
+        for line in f:
+            content+=line
+            #content+="\n"
+    return content
 
 
 def extrude(im, xStart, yStart, size, layers, dist = 10):
@@ -214,6 +219,14 @@ def processDataPipeline(data,fr):
     #print(fr)
     im = waveDistort(im, wav,ampl*50)
 
+    colors = im.copy()
+
+    print(f"Adding Ascii art...")
+    cont=openFile("assets\patterns9.txt")
+    im=addText(image=im,text=cont,position=(0,0),font=fontList[1],size=100)
+
+
+
     print(f"Adding title...")
 
     #title ="Reptilia"
@@ -222,7 +235,7 @@ def processDataPipeline(data,fr):
 
     txy=(im.shape[0]//50,im.shape[0]-(occ[3]-occ[1])-im.shape[0]//50)
     
-    colors = im
+    
     #colors = np.sort(im,axis=1)
 
     highlightColor =tuple(colors[im.shape[0]//3][im.shape[0]//2]+np.array([10,10,10]))#(255,255,255)#
