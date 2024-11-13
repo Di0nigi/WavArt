@@ -9,9 +9,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 frame = np.zeros(shape=(1000,1000,3))
 outPath="output"
-fontList=["fonts\\bitwise.ttf","fonts\PlanetN-VXDV.otf"]
+fontList=["fonts\\bitwise.ttf","fonts\PlanetN-VXDV.otf","fonts\CSBishopDrawn-Regular_demo-BF6732d05f69863.otf","fonts\CSAntliaDrawn-Regular_demo-BF6732cebcc8d67.otf","fonts\BechamDisco-Regular_demo-BF6719eb856cdc2.otf"]
 chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
-title=""
+title="Reptilia"
 #chars='0123456789'
 
 def openTrack(path):
@@ -77,7 +77,7 @@ def getFontSize(fontPath, targetHeight, maxSz ,text):
         fontSize += 1
         font = ImageFont.truetype(fontPath, fontSize)
     
-    return fontSize
+    return fontSize,font.getbbox(text)
 
 
 
@@ -209,12 +209,25 @@ def processDataPipeline(data,fr):
 
     print(f"Adding title...")
 
-    title ="Dune3"
-    txy=(0,im.shape[0]//2)
-    fnt = fontList[1]
-    sz = getFontSize(fnt, im.shape[0]//5, maxSz=im.shape[0]-20, text = title)
+    #title ="Reptilia"
+    fnt = fontList[4]
+    sz,occ = getFontSize(fnt, im.shape[0]//7, maxSz=im.shape[0]-20, text = title)
 
-    im=addText(im,title,txy,font=fnt,size=sz)
+    txy=(im.shape[0]//50,im.shape[0]-(occ[3]-occ[1])-im.shape[0]//50)
+    
+    colors = im
+    #colors = np.sort(im,axis=1)
+    #cv2.imwrite("output\colors.png",colors)
+    highlightColor =tuple(colors[im.shape[0]//3][im.shape[0]//2]+np.array([10,10,10]))#(255,255,255)#
+    shadowColor =tuple(colors[0][0]-np.array([10,10,10]))
+    #print(tuple(colors[-1][-1]))
+    #print(tuple(im[-1][-1]))
+    #print(tuple(colors[0][0]))
+    
+    
+
+    im=addText(im,title,txy,font=fnt,size=sz,color=shadowColor)
+    im=addText(im,title,(txy[0]+15,txy[1]),font=fnt,size=sz,color=highlightColor)
 
     print(f"Adding noise...")
     #print(nSum)
@@ -226,27 +239,21 @@ def processDataPipeline(data,fr):
     return im
 
 
-def main():
+def main(title):
     
     track = "D:\dionigi\Music\Synth\\RawTracks\z8.WAV"
     #track = "D:\dionigi\Music\Synth\\RawTracks\ZOOM0002.WAV"
-    #track = "D:\dionigi\Music\Synth\Dune3.mp3"
+    track = "D:\dionigi\Music\Synth\Dune3.mp3"
 
     d,f=openTrack(track)
    
     i = processDataPipeline(d,f)
 
-    save("bw.png",i)
-  
-
-
-
-
-
+    save(f"{title}.png",i)
 
     return "Done"
 
 
 
 
-print(main())
+print(main(title=title))
