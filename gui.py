@@ -14,6 +14,7 @@ class app:
         self.fileName="None"
         self.fontInd=0
         self.displayedIm = np.zeros(shape=(800,800,3),dtype=np.uint8)
+        self.displayedIm[:, :] = [170, 170, 170]
         self.w = 1000
         self.h = 800
         self.r = r
@@ -39,7 +40,7 @@ class app:
         self.fontMenu = tk.OptionMenu(self.sideSetting, self.currentFont, *self.fonts, command=self.onSelect)
         self.fontMenu.config(width=26)
         self.fontMenu.place(x=0,y=67)
-        self.genBt = tk.Button(self.sideSetting, text="Generate", command=self.gen,width=28)
+        self.genBt = tk.Button(self.sideSetting, text="Generate", command=self.gen,width=28,height=46)
         self.genBt.place(x=0,y=100)
         return
     def imagePanel(self):
