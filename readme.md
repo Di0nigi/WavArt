@@ -12,7 +12,7 @@
     |
     Certain portions are extruded according to BPM and beat patterns.
     |
-    The entire image is distorted based on the original waveform.
+    The entire image is distorted based on the original waveform and sample rate.
     |
     ASCII art is selected from the `\assets` archive based on 
     the given title and the original data values.

@@ -44,7 +44,7 @@ class app:
         return
     def imagePanel(self):
         self.imTkImage = ImageTk.PhotoImage(Image.fromarray(self.displayedIm))
-        self.imDisplayer = tk.Label(self.imPanel, image=self.imTkImage, width=self.h, height=self.h)
+        self.imDisplayer = tk.Label(self.imPanel, image=self.imTkImage, width=self.h-10, height=self.h-10)
         self.imDisplayer.place(x=0, y=0)   
 
         return
@@ -74,24 +74,25 @@ class app:
                 self.imDisplayer.config(image=self.imTkImage)
                 self.imDisplayer.image = self.imTkImage  
         return
-    def convertToSize(self,im):
+        ''' def convertToSize(self,im):
         w=self.imDisplayer.winfo_width()-1
         resized=resize(im,(computeRatio(w,1/1),w,3))
 
-        return resized
-
-def resize(dataArr, size):    
-    factors = [n / o for n, o in zip(size, dataArr.shape[:2])]  
-    resized = zoom(dataArr, factors + [1], order=3) 
-    return resized
-
-def computeRatio(dim,ratio):
-    
-    dim2 = dim / ratio
-    #elif ori == "p":
-     #   dim2= ratio * dim
-    #print(dim2)
-    return dim2
+        return resized'''
+    def convertToSize(self,im):
+   
+        w = self.imDisplayer.winfo_width() - 1
+        h = int(w / 1)  
+        
+        im = im.astype(np.uint8)
+        
+        pilImage = Image.fromarray(im)
+        
+        resizedPil = pilImage.resize((w, h), Image.LANCZOS)
+        
+        resizedArr = np.array(resizedPil)
+        
+        return resizedArr
 
 
 
