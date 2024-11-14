@@ -28,4 +28,3 @@
     All ASCII art was sourced from the [awesome-ascii-art]
     (https://github.com/devtooligan/awesome-ascii-art.git) repository. 
     Authors should be credited in the images or in the repository's original files.
-
