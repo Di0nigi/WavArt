@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog
 import artGen as aG
+from PIL import Image, ImageTk
+import numpy as np
+from scipy.ndimage import zoom
 
 class app:
     def __init__(self,r):
@@ -10,6 +13,7 @@ class app:
         self.fonts=["BechamDisco","bitwise","PlanetN","CSBishopDrawn","CSAntliaDrawn"]
         self.fileName="None"
         self.fontInd=0
+        self.displayedIm = np.zeros(shape=(800,800,3),dtype=np.uint8)
         self.w = 1000
         self.h = 800
         self.r = r
@@ -20,6 +24,7 @@ class app:
         self.sidePanel()
         self.imPanel = tk.Frame(self.r,bg="dark grey",height=self.h,width=self.h)
         self.imPanel.place(x=self.w-self.h,y=0)
+        self.imagePanel()
         return
     def run(self):
         self.r.mainloop()
@@ -38,6 +43,9 @@ class app:
         self.genBt.place(x=0,y=100)
         return
     def imagePanel(self):
+        self.imTkImage = ImageTk.PhotoImage(Image.fromarray(self.displayedIm))
+        self.imDisplayer = tk.Label(self.imPanel, image=self.imTkImage, width=self.h, height=self.h)
+        self.imDisplayer.place(x=0, y=0)   
 
         return
     def importFile(self):
@@ -61,8 +69,30 @@ class app:
                 i = aG.processDataPipeline(d,f,title=titl,fnt=self.fontInd)
                 aG.save(f"{titl}.png",i)
 
-
+                displayable = self.convertToSize(i)
+                self.imTkImage = ImageTk.PhotoImage(Image.fromarray(displayable))
+                self.imDisplayer.config(image=self.imTkImage)
+                self.imDisplayer.image = self.imTkImage  
         return
+    def convertToSize(self,im):
+        w=self.imDisplayer.winfo_width()-1
+        resized=resize(im,(computeRatio(w,1/1),w,3))
+
+        return resized
+
+def resize(dataArr, size):    
+    factors = [n / o for n, o in zip(size, dataArr.shape[:2])]  
+    resized = zoom(dataArr, factors + [1], order=3) 
+    return resized
+
+def computeRatio(dim,ratio):
+    
+    dim2 = dim / ratio
+    #elif ori == "p":
+     #   dim2= ratio * dim
+    #print(dim2)
+    return dim2
+
 
 
 def main():
